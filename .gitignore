@@ -1,0 +1,6 @@
+# Ignore python venv stuff
+bin/**
+include/**
+lib/**
+pyvenv.cfg
+*.csv

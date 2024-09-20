@@ -1,0 +1,49 @@
+name: Org-Wide License Analyze
+description: 'This github action is used to analyze the license of every repository in a github org'
+
+inputs:
+  GITHUB_ORG_NAME:
+    description: 'The name of the github org to analyze'
+    required: true
+    type: string
+  GITHUB_TOKEN:
+    description: 'The github token to use for the analysis, needs all repo: permissions and org:read'
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.12' 
+    
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python3 -m pip install --upgrade pip
+        pip install -r ${{ github.action_path }}/requirements.txt
+    
+    - name: Copy the license file to the action directory
+      shell: bash
+      run: |
+        cp ${{ github.action_path }}/org_get_all_repos_sbom.py .
+    
+    - name: Run License Analysis
+      shell: bash
+      run: python3 org_get_all_repos_sbom.py
+      env:
+        GITHUB_ORG: ${{ inputs.GITHUB_ORG_NAME }}
+        GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+    
+    - name: Upload License Overview as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: org-license-csv
+        path: '*.csv'
+
+branding:
+  icon: 'arrow-down-circle'
+  color: 'gray-dark'
